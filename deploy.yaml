@@ -1,1 +1,43 @@
+name: Deploy static HTML to GitHub Pages
 
+on:
+  # Akkor fut le automatikusan, amikor kód kerül a main ágra
+  push:
+    branches: ["main"]
+
+  # Lehetőséget biztosít arra is, hogy kézzel indítsd el a GitHub "Actions" füléről
+  workflow_dispatch:
+
+# Jogosultságok a GitHub Pages-hez való hozzáféréshez
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+# Egyszerre csak egy deployment fusson
+concurrency:
+  group: "pages"
+  cancel-in-progress: true
+
+jobs:
+  deploy:
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        
+      - name: Setup Pages
+        uses: actions/configure-pages@v4
+        
+      - name: Upload artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          # A gyökérkönyvtár (. ) tartalmazza az index.html-t
+          path: '.'
+          
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
